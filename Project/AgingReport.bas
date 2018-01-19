@@ -1,29 +1,29 @@
 Attribute VB_Name = "AgingReport"
-Sub Main()
-    Call TexttoColumns
+Sub AgingReport()
+    Call TextToColumns
     Call OrderData
     Call DeleteJunk
     Call SortByPart
     Call HeaderTotals
     Call AddSheets
-    Sheets("FG").Select
     Call MoveRM
     Call MoveInserts
     Call MoveCinserts
     Call MoveMS
     Call HeaderSetup
+    Call InsertOrder
 End Sub
 
 
-Sub TexttoColumns()
-Attribute TexttoColumns.VB_ProcData.VB_Invoke_Func = " \n14"
+Private Sub TextToColumns()
+Attribute TextToColumns.VB_ProcData.VB_Invoke_Func = " \n14"
 '
 ' TexttoColumns Macro
 '
 
 '
     Columns("A:A").Select
-    Selection.TexttoColumns Destination:=Range("A1"), DataType:=xlFixedWidth, _
+    Selection.TextToColumns Destination:=Range("A1"), DataType:=xlFixedWidth, _
         FieldInfo:=Array(Array(0, 1), Array(4, 1), Array(9, 1), Array(30, 1), Array(61, 1), _
         Array(64, 1), Array(82, 1), Array(100, 1), Array(120, 1), Array(134, 1), Array(150, 1), _
         Array(166, 1), Array(183, 1)), TrailingMinusNumbers:=True
@@ -45,7 +45,7 @@ Attribute TexttoColumns.VB_ProcData.VB_Invoke_Func = " \n14"
     ActiveWindow.SmallScroll Down:=-33
 End Sub
 
-Sub OrderData()
+Private Sub OrderData()
 Attribute OrderData.VB_ProcData.VB_Invoke_Func = " \n14"
 '
 ' OrderData Macro
@@ -74,7 +74,7 @@ Attribute OrderData.VB_ProcData.VB_Invoke_Func = " \n14"
     End With
 End Sub
 
-Sub DeleteJunk()
+Private Sub DeleteJunk()
     Dim Firstrow As Long
     Dim LastRow As Long
     Dim LastrowD As Long
@@ -130,17 +130,16 @@ Sub DeleteJunk()
             End With
         Next Lrow
         
+        On Error Resume Next
+        Range("A11:A99999").SpecialCells(xlCellTypeBlanks).EntireRow.Delete 'Remove blank rows
+        
         Firstrow = 8
         LastRow = .Cells(.Rows.Count, "D").End(xlUp).Row
 
         For Lrow = LastRow To Firstrow Step -1
 
             With .Cells(Lrow, "D")
-                If .Value Like "For*" Then              'Delete empty lines
-                .EntireRow.Delete
-                ElseIf .Value Like "-*" Then            'Delete empty lines
-                .EntireRow.Delete
-                ElseIf .Value Like "Major*" Then        'Delete Time
+                If .Value Like "Major*" Then        'Delete Time
                 .EntireRow.Delete
                 ElseIf .Value2 Like "Plant:*" Then      'Delete Dates
                 .EntireRow.Delete
@@ -174,7 +173,7 @@ Sub DeleteJunk()
 
 End Sub
 
-Sub SortByPart()
+Private Sub SortByPart()
 '
 ' SortByPart Macro
 '
@@ -223,7 +222,7 @@ Sub SortByPart()
 
 End Sub
 
-Sub HeaderTotals()
+Private Sub HeaderTotals()
 '
 ' HeaderTotals Macro
 '
@@ -281,9 +280,13 @@ Sub HeaderTotals()
     Selection.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""_);_(@_)"
     Columns("A:A").Select
     Selection.NumberFormat = "General"
+    Range("D7").Select
+    Selection.NumberFormat = "@"
+    ActiveCell.FormulaR1C1 = "1 - 30"
+    Range("D8").Select
 End Sub
 
-Sub AddSheets()
+Private Sub AddSheets()
 
     With Application
         .ScreenUpdating = False
@@ -299,7 +302,8 @@ Sub AddSheets()
         Sheets.Add After:=Sheets(ActiveWorkbook.Sheets.Count)
         ActiveSheet.Name = i
     Next i
-    'Sheets("FG").Select
+    Sheets("FG").Select
+    Range("A8").Select
     
         Exit Sub
     'Step 3: If here, an error happened; tell the user
@@ -309,7 +313,7 @@ MyError:
 
 End Sub
 
-Sub MoveMS()
+Private Sub MoveMS()
     With Application
         .ScreenUpdating = False
     End With
@@ -333,7 +337,7 @@ Sub MoveMS()
     Sheets("FG").Select
 End Sub
 
-Sub MoveRM()
+Private Sub MoveRM()
     With Application
         .ScreenUpdating = False
     End With
@@ -357,7 +361,7 @@ Sub MoveRM()
     Sheets("FG").Select
 End Sub
 
-Sub MoveInserts()
+Private Sub MoveInserts()
     With Application
         .ScreenUpdating = False
     End With
@@ -386,7 +390,7 @@ End Sub
 
 
 
-Sub MoveCinserts()
+Private Sub MoveCinserts()
     With Application
         .ScreenUpdating = False
     End With
@@ -414,7 +418,7 @@ Sub MoveCinserts()
 
 End Sub
 
-Sub HeaderSetup()
+Private Sub HeaderSetup()
     With Application
         .ScreenUpdating = False
     End With
@@ -460,6 +464,48 @@ Sub HeaderSetup()
 
 End Sub
 
+Private Sub InsertOrder()
+'
+' InsertOrder Macro
+'
+
+'
+    Range(Selection, Selection.End(xlToRight)).Select
+    Range(Selection, Selection.End(xlDown)).Select
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("I8:I63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("H8:H63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("G8:G63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("F8:F63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("E8:E63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("Inserts").Sort.SortFields.Add Key:=Range("D8:D63") _
+        , SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Inserts").Sort
+        .SetRange Range("A8:K63")
+        .Header = xlGuess
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    Sheets("Inserts").Select
+    Range("A8").Select
+    Range("F8:I45").Select
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 65535
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    Range("A8").Select
+    Sheets("FG").Select
+End Sub
 
 
 
